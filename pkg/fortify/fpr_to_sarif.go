@@ -12,12 +12,13 @@ import (
 
 	"github.com/piper-validation/fortify-client-go/models"
 
+	"github.com/SAP/jenkins-library/pkg/format"
+
 	"github.com/SAP/jenkins-library/pkg/log"
 	FileUtils "github.com/SAP/jenkins-library/pkg/piperutils"
 )
 
-// This struct encapsulates everyting in the FVDL document
-
+// FVDL This struct encapsulates everyting in the FVDL document
 type FVDL struct {
 	XMLName         xml.Name `xml:"FVDL"`
 	Xmlns           string   `xml:"xmlns,attr"`
@@ -36,38 +37,43 @@ type FVDL struct {
 	EngineData      EngineData      `xml:"EngineData"`
 }
 
+// CreatedTS
 type CreatedTS struct {
 	XMLName xml.Name `xml:"CreatedTS"`
 	Date    string   `xml:"date,attr"`
 	Time    string   `xml:"time,attr"`
 }
 
+// UUIF
 type UUID struct {
 	XMLName xml.Name `xml:"UUID"`
 	Uuid    string   `xml:",innerxml"`
 }
 
-// These structures are relevant to the Build object
-
+// LOC
 type LOC struct {
 	XMLName  xml.Name `xml:"LOC"`
 	LocType  string   `xml:"type,attr"`
 	LocValue string   `xml:",innerxml"`
 }
 
+// These structures are relevant to the Build object
+// The Build object transports all build and scan related information
 type Build struct {
 	XMLName        xml.Name `xml:"Build"`
 	Project        string   `xml:"Project"`
+	Version        string   `xml:"Version"`
 	Label          string   `xml:"Label"`
 	BuildID        string   `xml:"BuildID"`
 	NumberFiles    int      `xml:"NumberFiles"`
-	Locs           []LOC    `xml:",any"`
+	Locs           []LOC    `xml:"LOC"`
 	JavaClassPath  string   `xml:"JavaClasspath"`
 	SourceBasePath string   `xml:"SourceBasePath"`
 	SourceFiles    []File   `xml:"SourceFiles>File"`
 	Scantime       ScanTime `xml:"ScanTime"`
 }
 
+// File
 type File struct {
 	XMLName       xml.Name `xml:"File"`
 	FileSize      int      `xml:"size,attr"`
@@ -79,13 +85,13 @@ type File struct {
 	Locs          []LOC    `xml:",any,omitempty"`
 }
 
+// ScanTime
 type ScanTime struct {
 	XMLName xml.Name `xml:"ScanTime"`
 	Value   int      `xml:"value,attr"`
 }
 
-// These structures are relevant to the Vulnerabilities object
-
+// Vulnerabilities These structures are relevant to the Vulnerabilities object
 type Vulnerabilities struct {
 	XMLName       xml.Name        `xml:"Vulnerabilities"`
 	Vulnerability []Vulnerability `xml:"Vulnerability"`
@@ -98,6 +104,7 @@ type Vulnerability struct {
 	AnalysisInfo AnalysisInfo `xml:"AnalysisInfo>Unified"`
 }
 
+// ClassInfo
 type ClassInfo struct {
 	XMLName         xml.Name `xml:"ClassInfo"`
 	ClassID         string   `xml:"ClassID"`
@@ -108,6 +115,7 @@ type ClassInfo struct {
 	DefaultSeverity string   `xml:"DefaultSeverity"`
 }
 
+// InstanceInfo
 type InstanceInfo struct {
 	XMLName          xml.Name `xml:"InstanceInfo"`
 	InstanceID       string   `xml:"InstanceID"`
@@ -115,12 +123,14 @@ type InstanceInfo struct {
 	Confidence       string   `xml:"Confidence"`
 }
 
+// AnalysisInfo
 type AnalysisInfo struct { //Note that this is directly the "Unified" object
 	Context                Context
 	ReplacementDefinitions ReplacementDefinitions `xml:"ReplacementDefinitions"`
 	Trace                  []Trace                `xml:"Trace"`
 }
 
+// Context
 type Context struct {
 	XMLName   xml.Name `xml:"Context"`
 	ContextId string   `xml:"id,attr,omitempty"`
@@ -128,6 +138,7 @@ type Context struct {
 	FDSL      FunctionDeclarationSourceLocation
 }
 
+// Function
 type Function struct {
 	XMLName                xml.Name `xml:"Function"`
 	FunctionName           string   `xml:"name,attr"`
@@ -135,6 +146,7 @@ type Function struct {
 	FunctionEnclosingClass string   `xml:"enclosingClass,attr"`
 }
 
+// FunctionDeclarationSourceLocation
 type FunctionDeclarationSourceLocation struct {
 	XMLName      xml.Name `xml:"FunctionDeclarationSourceLocation"`
 	FDSLPath     string   `xml:"path,attr"`
@@ -144,18 +156,21 @@ type FunctionDeclarationSourceLocation struct {
 	FDSLColEnd   string   `xml:"colEnd,attr"`
 }
 
+// ReplacementDefinitions
 type ReplacementDefinitions struct {
 	XMLName     xml.Name      `xml:"ReplacementDefinitions"`
 	Def         []Def         `xml:"Def"`
 	LocationDef []LocationDef `xml:"LocationDef"`
 }
 
+// Def
 type Def struct {
 	XMLName  xml.Name `xml:"Def"`
 	DefKey   string   `xml:"key,attr"`
 	DefValue string   `xml:"value,attr"`
 }
 
+// LocationDef
 type LocationDef struct {
 	XMLName  xml.Name `xml:"LocationDef"`
 	Path     string   `xml:"path,attr"`
@@ -166,27 +181,32 @@ type LocationDef struct {
 	Key      string   `xml:"key,attr"`
 }
 
+// Trace
 type Trace struct {
 	XMLName xml.Name `xml:"Trace"`
 	Primary Primary  `xml:"Primary"`
 }
 
+// Primary
 type Primary struct {
 	XMLName xml.Name `xml:"Primary"`
 	Entry   []Entry  `xml:"Entry"`
 }
 
+// Entry
 type Entry struct {
 	XMLName xml.Name `xml:"Entry"`
 	NodeRef NodeRef  `xml:"NodeRef,omitempty"`
 	Node    Node     `xml:"Node,omitempty"`
 }
 
+// NodeRef
 type NodeRef struct {
 	XMLName xml.Name `xml:"NodeRef"`
 	RefId   int      `xml:"id,attr"`
 }
 
+// Node
 type Node struct {
 	XMLName        xml.Name       `xml:"Node"`
 	IsDefault      string         `xml:"isDefault,attr,omitempty"`
@@ -197,6 +217,7 @@ type Node struct {
 	Knowledge      Knowledge      `xml:"Knowledge,omitempty"`
 }
 
+// SourceLocation
 type SourceLocation struct {
 	XMLName   xml.Name `xml:"SourceLocation"`
 	Path      string   `xml:"path,attr"`
@@ -208,34 +229,40 @@ type SourceLocation struct {
 	Snippet   string   `xml:"snippet,attr"`
 }
 
+// Action
 type Action struct {
 	XMLName    xml.Name `xml:"Action"`
 	Type       string   `xml:"type,attr"`
 	ActionData string   `xml:",innerxml"`
 }
 
+// Reason
 type Reason struct {
 	XMLName xml.Name `xml:"Reason"`
 	Rule    Rule     `xml:"Rule,omitempty"`
 	Trace   Trace    `xml:"Trace,omitempty"`
 }
 
+// Rule
 type Rule struct {
 	XMLName xml.Name `xml:"Rule"`
 	RuleID  string   `xml:"ruleID,attr"`
 }
 
+// Group
 type Group struct {
 	XMLName xml.Name `xml:"Group"`
 	Name    string   `xml:"name,attr"`
 	Data    string   `xml:",innerxml"`
 }
 
+// Knowledge
 type Knowledge struct {
 	XMLName xml.Name `xml:"Knowledge"`
 	Facts   []Fact   `xml:"Fact"`
 }
 
+// Fact
 type Fact struct {
 	XMLName  xml.Name `xml:"Fact"`
 	Primary  string   `xml:"primary,attr"`
@@ -243,22 +270,19 @@ type Fact struct {
 	FactData string   `xml:",innerxml"`
 }
 
-// These structures are relevant to the ContextPool object
-
+// ContextPool These structures are relevant to the ContextPool object
 type ContextPool struct {
 	XMLName xml.Name  `xml:"ContextPool"`
 	Context []Context `xml:"Context"`
 }
 
-// These structures are relevant to the UnifiedNodePool object
-
+// UnifiedNodePool These structures are relevant to the UnifiedNodePool object
 type UnifiedNodePool struct {
 	XMLName xml.Name `xml:"UnifiedNodePool"`
 	Node    []Node   `xml:"Node"`
 }
 
-// These structures are relevant to the Description object
-
+// Description These structures are relevant to the Description object
 type Description struct {
 	XMLName           xml.Name          `xml:"Description"`
 	ContentType       string            `xml:"contentType,attr"`
@@ -271,32 +295,38 @@ type Description struct {
 	CustomDescription CustomDescription `xml:"CustomDescription,omitempty"`
 }
 
+// Abstract
 type Abstract struct {
 	XMLName xml.Name `xml:"Abstract"`
 	Text    string   `xml:",innerxml"`
 }
 
+// Explanation
 type Explanation struct {
 	XMLName xml.Name `xml:"Explanation"`
 	Text    string   `xml:",innerxml"`
 }
 
+// Recommendations
 type Recommendations struct {
 	XMLName xml.Name `xml:"Recommendations"`
 	Text    string   `xml:",innerxml"`
 }
 
+// Reference
 type Reference struct {
 	XMLName xml.Name `xml:"Reference"`
 	Title   string   `xml:"Title"`
 	Author  string   `xml:"Author"`
 }
 
+// Tip
 type Tip struct {
 	XMLName xml.Name `xml:"Tip"`
 	Tip     string   `xml:",innerxml"`
 }
 
+// CustomDescription
 type CustomDescription struct {
 	XMLName         xml.Name        `xml:"CustomDescription"`
 	ContentType     string          `xml:"contentType,attr"`
@@ -306,8 +336,7 @@ type CustomDescription struct {
 	References      []Reference     `xml:"References>Reference"`
 }
 
-// These structures are relevant to the Snippets object
-
+// Snippet These structures are relevant to the Snippets object
 type Snippet struct {
 	XMLName   xml.Name `xml:"Snippet"`
 	SnippetId string   `xml:"id,attr"`
@@ -317,8 +346,7 @@ type Snippet struct {
 	Text      string   `xml:"Text"`
 }
 
-// These structures are relevant to the ProgramData object
-
+// ProgramData These structures are relevant to the ProgramData object
 type ProgramData struct {
 	XMLName         xml.Name         `xml:"ProgramData"`
 	Sources         []SourceInstance `xml:"Sources>SourceInstance"`
@@ -326,6 +354,7 @@ type ProgramData struct {
 	CalledWithNoDef []Function       `xml:"CalledWithNoDef>Function"`
 }
 
+// SourceInstance
 type SourceInstance struct {
 	XMLName        xml.Name       `xml:"SourceInstance"`
 	RuleID         string         `xml:"ruleID,attr"`
@@ -335,28 +364,33 @@ type SourceInstance struct {
 	TaintFlags     TaintFlags     `xml:"TaintFlags"`
 }
 
+// FunctionCall
 type FunctionCall struct {
 	XMLName        xml.Name       `xml:"FunctionCall"`
 	SourceLocation SourceLocation `xml:"SourceLocation"`
 	Function       Function       `xml:"Function"`
 }
 
+// FunctionEntry
 type FunctionEntry struct {
 	XMLName        xml.Name       `xml:"FunctionEntry"`
 	SourceLocation SourceLocation `xml:"SourceLocation"`
 	Function       Function       `xml:"Function"`
 }
 
+// TaintFlags
 type TaintFlags struct {
 	XMLName   xml.Name    `xml:"TaintFlags"`
 	TaintFlag []TaintFlag `xml:"TaintFlag"`
 }
 
+// TaintFlag
 type TaintFlag struct {
 	XMLName       xml.Name `xml:"TaintFlag"`
 	TaintFlagName string   `xml:"name,attr"`
 }
 
+// SinkInstance
 type SinkInstance struct {
 	XMLName        xml.Name       `xml:"SinkInstance"`
 	RuleID         string         `xml:"ruleID,attr"`
@@ -364,8 +398,7 @@ type SinkInstance struct {
 	SourceLocation SourceLocation `xml:"SourceLocation,omitempty"`
 }
 
-// These structures are relevant to the EngineData object
-
+// EngineData These structures are relevant to the EngineData object
 type EngineData struct {
 	XMLName       xml.Name     `xml:"EngineData"`
 	EngineVersion string       `xml:"EngineVersion"`
@@ -379,6 +412,7 @@ type EngineData struct {
 	LicenseInfo   LicenseInfo  `xml:"LicenseInfo"`
 }
 
+// RulePack
 type RulePack struct {
 	XMLName    xml.Name `xml:"RulePack"`
 	RulePackID string   `xml:"RulePackID"`
@@ -388,24 +422,28 @@ type RulePack struct {
 	MAC        string   `xml:"MAC"`
 }
 
+// Properties
 type Properties struct {
 	XMLName        xml.Name   `xml:"Properties"`
 	PropertiesType string     `xml:"type,attr"`
 	Property       []Property `xml:"Property"`
 }
 
+// Property
 type Property struct {
 	XMLName xml.Name `xml:"Property"`
 	Name    string   `xml:"name"`
 	Value   string   `xml:"value"`
 }
 
+// Error
 type Error struct {
 	XMLName      xml.Name `xml:"Error"`
 	ErrorCode    string   `xml:"code,attr"`
 	ErrorMessage string   `xml:",innerxml"`
 }
 
+// MachineInfo
 type MachineInfo struct {
 	XMLName  xml.Name `xml:"MachineInfo"`
 	Hostname string   `xml:"Hostname"`
@@ -413,29 +451,34 @@ type MachineInfo struct {
 	Platform string   `xml:"Platform"`
 }
 
+// FilterResult
 type FilterResult struct {
 	XMLName xml.Name `xml:"FilterResult"`
 	//Todo? No data in sample audit file
 }
 
+// RuleInfo
 type RuleInfo struct {
 	XMLName       xml.Name `xml:"Rule"`
 	RuleID        string   `xml:"id,attr"`
 	MetaInfoGroup []Group  `xml:"MetaInfo>Group,omitempty"`
 }
 
+// LicenseInfo
 type LicenseInfo struct {
 	XMLName    xml.Name     `xml:"LicenseInfo"`
 	Metadata   []Metadata   `xml:"Metadata"`
 	Capability []Capability `xml:"Capability"`
 }
 
+// Metadata
 type Metadata struct {
 	XMLName xml.Name `xml:"Metadata"`
 	Name    string   `xml:"name"`
 	Value   string   `xml:"value"`
 }
 
+// Capability
 type Capability struct {
 	XMLName    xml.Name  `xml:"Capability"`
 	Name       string    `xml:"Name"`
@@ -443,127 +486,27 @@ type Capability struct {
 	Attribute  Attribute `xml:"Attribute"`
 }
 
+// Attribute
 type Attribute struct {
 	XMLName xml.Name `xml:"Attribute"`
 	Name    string   `xml:"name"`
 	Value   string   `xml:"value"`
 }
 
-// JSON receptacle structs
+// Utils
 
-type SARIF struct {
-	Schema  string `json:"$schema" default:"https://docs.oasis-open.org/sarif/sarif/v2.1.0/cos01/schemas/sarif-schema-2.1.0.json"`
-	Version string `json:"version" default:"2.1.0"`
-	Runs    []Runs `json:"runs"`
+func (n Node) isEmpty() bool {
+	return n.IsDefault == ""
 }
 
-type Runs struct {
-	Results []Results `json:"results"`
-	Tool    Tool      `json:"tool"`
-	/*Invocations         []Invocations      `json:"invocations"`
-	OriginalUriBaseIds  OriginalUriBaseIds `json:"originalUriBaseIds"`
-	Artifacts           []Artifact         `json:"artifacts"`
-	AutomationDetails   AutomationDetails  `json:"automationDetails"`
-	ColumnKind          string             `json:"columnKind" default:"utf16CodeUnits"`
-	ThreadFlowLocations []Locations        `json:"threadFlowLocations"`
-	Taxonomies          []Taxonomies       `json:"taxonomies"`*/
+func (a Action) isEmpty() bool {
+	return a.ActionData == ""
 }
 
-// These structs are relevant to the Results object
-
-type Results struct {
-	RuleID    string  `json:"ruleId"`
-	RuleIndex int     `json:"ruleIndex"`
-	Level     string  `json:"level,omitempty"`
-	Message   Message `json:"message"`
-	/*Locations        []Location        `json:"locations"`
-	CodeFlows        []CodeFlow        `json:"codeFlows"`
-	RelatedLocations []RelatedLocation `json:"relatedLocations"`*/
-	Properties SarifProperties `json:"properties"`
-}
-
-type Message struct {
-	Text string `json:"text,omitempty"`
-}
-
-type SarifProperties struct {
-	InstanceID        string `json:"InstanceID"`
-	InstanceSeverity  string `json:"InstanceSeverity"`
-	Confidence        string `json:"Confidence"`
-	Audited           bool   `json:"Audited"`
-	ToolSeverity      string `json:"ToolSeverity"`
-	ToolSeverityIndex int    `json:"ToolSeverityIndex"`
-	ToolState         string `json:"ToolState"`
-	ToolStateIndex    int    `json:"ToolStateIndex"`
-	ToolAuditMessage  string `json:"ToolAuditMessage"`
-	UnifiedAuditState string `json:"UnifiedAuditState"`
-}
-
-// These structs are relevant to the Tool object
-
-type Tool struct {
-	Driver Driver `json:"driver"`
-}
-
-type Driver struct {
-	Name           string      `json:"name"`
-	Version        string      `json:"version"`
-	InformationUri string      `json:"informationUri,omitempty"`
-	Rules          []SarifRule `json:"rules"`
-	//SupportedTaxonomies []SupportedTaxonomies `json:"supportedTaxonomies"`
-}
-
-type SarifRule struct {
-	Id                   string               `json:"id"`
-	Guid                 string               `json:"guid"`
-	Name                 string               `json:"name,omitempty"`
-	ShortDescription     Message              `json:"shortDescription"`
-	FullDescription      Message              `json:"fullDescription"`
-	DefaultConfiguration DefaultConfiguration `json:"defaultConfiguration"`
-	Relationships        []Relationships      `json:"relationships,omitempty"`
-	Properties           *SarifRuleProperties `json:"properties,omitempty"`
-}
-
-type SupportedTaxonomies struct {
-	Name  string `json:"name"`
-	Index int    `json:"index"`
-	Guid  string `json:"guid"`
-}
-
-type DefaultConfiguration struct {
-	Properties DefaultProperties `json:"properties"`
-	Level      string            `json:"level,omitempty"` //This exists in the template, but not sure how it is populated. TODO.
-}
-
-type DefaultProperties struct {
-	DefaultSeverity string `json:"DefaultSeverity"`
-}
-
-type Relationships struct {
-	Target Target   `json:"target"`
-	Kinds  []string `json:"kinds"`
-}
-
-type Target struct {
-	Id            string        `json:"id"`
-	ToolComponent ToolComponent `json:"toolComponent"`
-}
-
-type ToolComponent struct {
-	Name string `json:"name"`
-	Guid string `json:"guid"`
-}
-
-type SarifRuleProperties struct {
-	Accuracy    string `json:"Accuracy,omitempty"`
-	Impact      string `json:"Impact,omitempty"`
-	Probability string `json:"Probability,omitempty"`
-}
-
-func ConvertFprToSarif(sys System, project *models.Project, projectVersion *models.ProjectVersion, resultFilePath string) (SARIF, error) {
+// ConvertFprToSarif converts the FPR file contents into SARIF format
+func ConvertFprToSarif(sys System, project *models.Project, projectVersion *models.ProjectVersion, resultFilePath string, filterSet *models.FilterSet) (format.SARIF, error) {
 	log.Entry().Debug("Extracting FPR.")
-	var sarif SARIF
-
+	var sarif format.SARIF
 	tmpFolder, err := ioutil.TempDir(".", "temp-")
 	defer os.RemoveAll(tmpFolder)
 	if err != nil {
@@ -580,28 +523,40 @@ func ConvertFprToSarif(sys System, project *models.Project, projectVersion *mode
 	if err != nil {
 		return sarif, err
 	}
+	if len(data) == 0 {
+		log.Entry().Error("Error reading audit file at " + filepath.Join(tmpFolder, "audit.fvdl") + ". This might be that the file is missing, corrupted, or too large. Aborting procedure.")
+		err := errors.New("cannot read audit file")
+		return sarif, err
+	}
 
-	return Parse(sys, project, projectVersion, data)
+	log.Entry().Debug("Calling Parse.")
+	return Parse(sys, project, projectVersion, data, filterSet)
 }
 
-func Parse(sys System, project *models.Project, projectVersion *models.ProjectVersion, data []byte) (SARIF, error) {
+// Parse parses the FPR file
+func Parse(sys System, project *models.Project, projectVersion *models.ProjectVersion, data []byte, filterSet *models.FilterSet) (format.SARIF, error) {
 	//To read XML data, Unmarshal or Decode can be used, here we use Decode to work on the stream
 	reader := bytes.NewReader(data)
 	decoder := xml.NewDecoder(reader)
 
 	var fvdl FVDL
-	decoder.Decode(&fvdl)
+	err := decoder.Decode(&fvdl)
+	if err != nil {
+		return format.SARIF{}, err
+	}
 
 	//Now, we handle the sarif
-	var sarif SARIF
-	sarif.Schema = "https://docs.oasis-open.org/sarif/sarif/v2.1.0/cos01/schemas/sarif-schema-2.1.0.json"
+	var sarif format.SARIF
+	sarif.Schema = "https://docs.oasis-open.org/sarif/sarif/v2.1.0/cos02/schemas/sarif-schema-2.1.0.json"
 	sarif.Version = "2.1.0"
-	var fortifyRun Runs
+	var fortifyRun format.Runs
+	fortifyRun.ColumnKind = "utf16CodeUnits"
+	cweIdsForTaxonomies := make(map[string]string) //Defining this here and filling it in the course of the program helps filling the Taxonomies object easily. Map because easy to check for keys
 	sarif.Runs = append(sarif.Runs, fortifyRun)
 
 	// Handle results/vulnerabilities
 	for i := 0; i < len(fvdl.Vulnerabilities.Vulnerability); i++ {
-		result := *new(Results)
+		result := *new(format.Results)
 		result.RuleID = fvdl.Vulnerabilities.Vulnerability[i].ClassInfo.ClassID
 		result.Level = "none" //TODO
 		//get message
@@ -613,13 +568,136 @@ func Parse(sys System, project *models.Project, projectVersion *models.ProjectVe
 				for l := 0; l < len(fvdl.Vulnerabilities.Vulnerability[i].AnalysisInfo.ReplacementDefinitions.Def); l++ {
 					rawMessage = strings.ReplaceAll(rawMessage, "Replace key=\""+fvdl.Vulnerabilities.Vulnerability[i].AnalysisInfo.ReplacementDefinitions.Def[l].DefKey+"\"", fvdl.Vulnerabilities.Vulnerability[i].AnalysisInfo.ReplacementDefinitions.Def[l].DefValue)
 				}
-				result.Message = Message{rawMessage}
+				msg := new(format.Message)
+				msg.Text = rawMessage
+				result.Message = msg
 				break
 			}
 		}
 
+		// Handle all locations items
+		location := *new(format.Location)
+		var startingColumn int
+		//get location
+		for k := 0; k < len(fvdl.Vulnerabilities.Vulnerability[i].AnalysisInfo.Trace); k++ { // k iterates on traces
+			//In each trace/primary, there can be one or more entries
+			//Each trace represents a codeflow, each entry represents a location in threadflow
+			codeFlow := *new(format.CodeFlow)
+			threadFlow := *new(format.ThreadFlow)
+			//We now iterate on Entries in the trace/primary
+			for l := 0; l < len(fvdl.Vulnerabilities.Vulnerability[i].AnalysisInfo.Trace[k].Primary.Entry); l++ { // l iterates on entries
+				threadFlowLocation := *new(format.Locations) //One is created regardless
+				//the default node dictates the interesting threadflow (location, and so on)
+				//this will populate both threadFlowLocation AND the parent location object (result.Locations[0])
+				if !fvdl.Vulnerabilities.Vulnerability[i].AnalysisInfo.Trace[k].Primary.Entry[l].Node.isEmpty() && fvdl.Vulnerabilities.Vulnerability[i].AnalysisInfo.Trace[k].Primary.Entry[l].Node.IsDefault == "true" {
+					//initalize threadFlowLocation.Location
+					threadFlowLocation.Location = new(format.Location)
+					//get artifact location
+					for j := 0; j < len(fvdl.Build.SourceFiles); j++ { // j iterates on source files
+						if fvdl.Build.SourceFiles[j].Name == fvdl.Vulnerabilities.Vulnerability[i].AnalysisInfo.Trace[k].Primary.Entry[l].Node.SourceLocation.Path {
+							threadFlowLocation.Location.PhysicalLocation.ArtifactLocation.Index = j
+							break
+						}
+					}
+					//get region & context region
+					threadFlowLocation.Location.PhysicalLocation.Region.StartLine = fvdl.Vulnerabilities.Vulnerability[i].AnalysisInfo.Trace[k].Primary.Entry[l].Node.SourceLocation.Line
+					//Snippet is handled last
+					//threadFlowLocation.Location.PhysicalLocation.Region.Snippet.Text = "foobar"
+					targetSnippetId := fvdl.Vulnerabilities.Vulnerability[i].AnalysisInfo.Trace[k].Primary.Entry[l].Node.SourceLocation.Snippet
+					for j := 0; j < len(fvdl.Snippets); j++ {
+						if fvdl.Snippets[j].SnippetId == targetSnippetId {
+							threadFlowLocation.Location.PhysicalLocation.ContextRegion.StartLine = fvdl.Snippets[j].StartLine
+							threadFlowLocation.Location.PhysicalLocation.ContextRegion.EndLine = fvdl.Snippets[j].EndLine
+							snippetSarif := new(format.SnippetSarif)
+							snippetSarif.Text = fvdl.Snippets[j].Text
+							threadFlowLocation.Location.PhysicalLocation.ContextRegion.Snippet = snippetSarif
+							break
+						}
+					}
+					//parse SourceLocation object for the startColumn value, store it appropriately
+					startingColumn = fvdl.Vulnerabilities.Vulnerability[i].AnalysisInfo.Trace[k].Primary.Entry[l].Node.SourceLocation.ColStart
+					//check for existance of action object, and if yes, save message
+					if !fvdl.Vulnerabilities.Vulnerability[i].AnalysisInfo.Trace[k].Primary.Entry[l].Node.Action.isEmpty() {
+						threadFlowLocation.Location.Message = new(format.Message)
+						threadFlowLocation.Location.Message.Text = fvdl.Vulnerabilities.Vulnerability[i].AnalysisInfo.Trace[k].Primary.Entry[l].Node.Action.ActionData
+						// Handle snippet
+						snippetTarget := ""
+						switch fvdl.Vulnerabilities.Vulnerability[i].AnalysisInfo.Trace[k].Primary.Entry[l].Node.Action.Type {
+						case "Assign":
+							snippetWords := strings.Split(fvdl.Vulnerabilities.Vulnerability[i].AnalysisInfo.Trace[k].Primary.Entry[l].Node.Action.ActionData, " ")
+							if snippetWords[0] == "Assignment" {
+								snippetTarget = snippetWords[2]
+							} else {
+								snippetTarget = fvdl.Vulnerabilities.Vulnerability[i].AnalysisInfo.Trace[k].Primary.Entry[l].Node.Action.ActionData
+							}
+						case "InCall":
+							snippetTarget = strings.Split(fvdl.Vulnerabilities.Vulnerability[i].AnalysisInfo.Trace[k].Primary.Entry[l].Node.Action.ActionData, "(")[0]
+						case "OutCall":
+							snippetTarget = strings.Split(fvdl.Vulnerabilities.Vulnerability[i].AnalysisInfo.Trace[k].Primary.Entry[l].Node.Action.ActionData, "(")[0]
+						case "InOutCall":
+							snippetTarget = strings.Split(fvdl.Vulnerabilities.Vulnerability[i].AnalysisInfo.Trace[k].Primary.Entry[l].Node.Action.ActionData, "(")[0]
+						case "Return":
+							snippetTarget = fvdl.Vulnerabilities.Vulnerability[i].AnalysisInfo.Trace[k].Primary.Entry[l].Node.Action.ActionData
+						case "Read":
+							snippetWords := strings.Split(fvdl.Vulnerabilities.Vulnerability[i].AnalysisInfo.Trace[k].Primary.Entry[l].Node.Action.ActionData, " ")
+							if len(snippetWords) > 1 {
+								snippetTarget = " " + snippetWords[1]
+							} else {
+								snippetTarget = snippetWords[0]
+							}
+						default:
+							snippetTarget = fvdl.Vulnerabilities.Vulnerability[i].AnalysisInfo.Trace[k].Primary.Entry[l].Node.Action.ActionData
+						}
+						physLocationSnippetLines := strings.Split(threadFlowLocation.Location.PhysicalLocation.ContextRegion.Snippet.Text, "\n")
+						snippetText := ""
+						for j := 0; j < len(physLocationSnippetLines); j++ {
+							if strings.Contains(physLocationSnippetLines[j], snippetTarget) {
+								snippetText = physLocationSnippetLines[j]
+								break
+							}
+						}
+						snippetSarif := new(format.SnippetSarif)
+						if snippetText != "" {
+							snippetSarif.Text = snippetText
+						} else {
+							snippetSarif.Text = threadFlowLocation.Location.PhysicalLocation.ContextRegion.Snippet.Text
+						}
+						threadFlowLocation.Location.PhysicalLocation.Region.Snippet = snippetSarif
+					} else {
+						snippetSarif := new(format.SnippetSarif)
+						snippetSarif.Text = threadFlowLocation.Location.PhysicalLocation.ContextRegion.Snippet.Text
+						threadFlowLocation.Location.PhysicalLocation.Region.Snippet = snippetSarif
+					}
+					location = *threadFlowLocation.Location
+					//set Kinds
+					threadFlowLocation.Kinds = append(threadFlowLocation.Kinds, "unknown") //TODO
+				} else { //is not a main threadflow: just register NodeRef index in threadFlowLocation
+					threadFlowLocation.Index = fvdl.Vulnerabilities.Vulnerability[i].AnalysisInfo.Trace[k].Primary.Entry[l].NodeRef.RefId
+				}
+				//add the threadflowlocation to the list of locations
+				threadFlow.Locations = append(threadFlow.Locations, threadFlowLocation)
+			}
+			codeFlow.ThreadFlows = append(codeFlow.ThreadFlows, threadFlow)
+			result.CodeFlows = append(result.CodeFlows, codeFlow)
+		}
+
+		//For some reason, the principal object only has 1 location: here we keep the last one
+		//Void message
+		location.Message = nil
+		result.Locations = append(result.Locations, location)
+
+		//handle relatedLocation
+		relatedLocation := *new(format.RelatedLocation)
+		relatedLocation.ID = 1
+		relatedLocation.PhysicalLocation = *new(format.RelatedPhysicalLocation)
+		relatedLocation.PhysicalLocation.ArtifactLocation = location.PhysicalLocation.ArtifactLocation
+		relatedLocation.PhysicalLocation.Region = *new(format.RelatedRegion)
+		relatedLocation.PhysicalLocation.Region.StartLine = location.PhysicalLocation.Region.StartLine
+		relatedLocation.PhysicalLocation.Region.StartColumn = startingColumn
+		result.RelatedLocations = append(result.RelatedLocations, relatedLocation)
+
 		//handle properties
-		prop := *new(SarifProperties)
+		prop := new(format.SarifProperties)
 		prop.InstanceSeverity = fvdl.Vulnerabilities.Vulnerability[i].InstanceInfo.InstanceSeverity
 		prop.Confidence = fvdl.Vulnerabilities.Vulnerability[i].InstanceInfo.Confidence
 		prop.InstanceID = fvdl.Vulnerabilities.Vulnerability[i].InstanceInfo.InstanceID
@@ -632,7 +710,7 @@ func Parse(sys System, project *models.Project, projectVersion *models.ProjectVe
 			prop.ToolState = "Not an Issue"
 			prop.ToolStateIndex = 1
 		} else if sys != nil {
-			if err := prop.IntegrateAuditData(fvdl.Vulnerabilities.Vulnerability[i].InstanceInfo.InstanceID, sys, project, projectVersion); err != nil {
+			if err := integrateAuditData(prop, fvdl.Vulnerabilities.Vulnerability[i].InstanceInfo.InstanceID, sys, project, projectVersion, filterSet); err != nil {
 				log.Entry().Debug(err)
 				prop.Audited = false
 				prop.ToolState = "Unknown"
@@ -649,17 +727,17 @@ func Parse(sys System, project *models.Project, projectVersion *models.ProjectVe
 	}
 
 	//handle the tool object
-	tool := *new(Tool)
-	tool.Driver = *new(Driver)
+	tool := *new(format.Tool)
+	tool.Driver = *new(format.Driver)
 	tool.Driver.Name = "MicroFocus Fortify SCA"
 	tool.Driver.Version = fvdl.EngineData.EngineVersion
 	tool.Driver.InformationUri = "https://www.microfocus.com/documentation/fortify-static-code-analyzer-and-tools/2020/SCA_Guide_20.2.0.pdf"
 
 	//handles rules
 	for i := 0; i < len(fvdl.EngineData.RuleInfo); i++ { //i iterates on rules
-		sarifRule := *new(SarifRule)
-		sarifRule.Id = fvdl.EngineData.RuleInfo[i].RuleID
-		sarifRule.Guid = fvdl.EngineData.RuleInfo[i].RuleID
+		sarifRule := *new(format.SarifRule)
+		sarifRule.ID = fvdl.EngineData.RuleInfo[i].RuleID
+		sarifRule.GUID = fvdl.EngineData.RuleInfo[i].RuleID
 		for j := 0; j < len(fvdl.Vulnerabilities.Vulnerability); j++ { //j iterates on vulns to find the name
 			if fvdl.Vulnerabilities.Vulnerability[j].ClassInfo.ClassID == fvdl.EngineData.RuleInfo[i].RuleID {
 				var nameArray []string
@@ -673,13 +751,15 @@ func Parse(sys System, project *models.Project, projectVersion *models.ProjectVe
 					nameArray = append(nameArray, fvdl.Vulnerabilities.Vulnerability[j].ClassInfo.Subtype)
 				}
 				sarifRule.Name = strings.Join(nameArray, "/")
-				sarifRule.DefaultConfiguration.Properties.DefaultSeverity = fvdl.Vulnerabilities.Vulnerability[j].ClassInfo.DefaultSeverity
+				defaultConfig := new(format.DefaultConfiguration)
+				defaultConfig.Properties.DefaultSeverity = fvdl.Vulnerabilities.Vulnerability[j].ClassInfo.DefaultSeverity
+				sarifRule.DefaultConfiguration = defaultConfig
 				break
 			}
 		}
 		//Descriptions
 		for j := 0; j < len(fvdl.Description); j++ {
-			if fvdl.Description[j].ClassID == sarifRule.Id {
+			if fvdl.Description[j].ClassID == sarifRule.ID {
 				rawAbstract := fvdl.Description[j].Abstract.Text
 				rawExplanation := fvdl.Description[j].Explanation.Text
 				// Replacement defintions in abstract/explanation
@@ -697,8 +777,12 @@ func Parse(sys System, project *models.Project, projectVersion *models.ProjectVe
 						if fvdl.Description[j].CustomDescription.RuleID != "" {
 							rawExplanation = rawExplanation + "\n;" + fvdl.Description[j].CustomDescription.Explanation.Text
 						}
-						sarifRule.ShortDescription.Text = rawAbstract
-						sarifRule.FullDescription.Text = rawExplanation
+						sd := new(format.Message)
+						sd.Text = rawAbstract
+						sarifRule.ShortDescription = sd
+						fd := new(format.Message)
+						fd.Text = rawExplanation
+						sarifRule.FullDescription = fd
 						break
 					}
 				}
@@ -706,24 +790,42 @@ func Parse(sys System, project *models.Project, projectVersion *models.ProjectVe
 			}
 		}
 		// Avoid empty descriptions to respect standard
-		if sarifRule.ShortDescription.Text == "" {
-			sarifRule.ShortDescription.Text = "None."
-		}
-		if sarifRule.FullDescription.Text == "" { // OR USE OMITEMPTY
-			sarifRule.FullDescription.Text = "None."
-		}
+		//if sarifRule.ShortDescription.Text == "" {
+		//	sarifRule.ShortDescription.Text = "None."
+		//}
+		//if sarifRule.FullDescription.Text == "" { // OR USE OMITEMPTY
+		//	sarifRule.FullDescription.Text = "None."
+		//}
 
 		//properties
+		//Prepare a CWE id object as an in-case
+		cweIds := []string{}
 		//scan for the properties we want:
 		var propArray [][]string
 		for j := 0; j < len(fvdl.EngineData.RuleInfo[i].MetaInfoGroup); j++ {
 			if (fvdl.EngineData.RuleInfo[i].MetaInfoGroup[j].Name == "Accuracy") || (fvdl.EngineData.RuleInfo[i].MetaInfoGroup[j].Name == "Impact") || (fvdl.EngineData.RuleInfo[i].MetaInfoGroup[j].Name == "Probability") {
 				propArray = append(propArray, []string{fvdl.EngineData.RuleInfo[i].MetaInfoGroup[j].Name, fvdl.EngineData.RuleInfo[i].MetaInfoGroup[j].Data})
+			} else if fvdl.EngineData.RuleInfo[i].MetaInfoGroup[j].Name == "altcategoryCWE" {
+				//Get all CWE IDs. First, split on ", "
+				rawCweIds := strings.Split(fvdl.EngineData.RuleInfo[i].MetaInfoGroup[j].Data, ", ")
+				//If not "None", split each string on " " and add its 2nd index
+				if rawCweIds[0] != "None" {
+					for k := 0; k < len(rawCweIds); k++ {
+						cweId := strings.Split(rawCweIds[k], " ")[2]
+						//Fill the cweIdsForTaxonomies map if not already in
+						if _, isIn := cweIdsForTaxonomies[cweId]; !isIn {
+							cweIdsForTaxonomies[cweId] = cweId
+						}
+						cweIds = append(cweIds, cweId)
+					}
+				} else {
+					cweIds = append(cweIds, rawCweIds[0])
+				}
 			}
 		}
-		var ruleProp *SarifRuleProperties
+		var ruleProp *format.SarifRuleProperties
 		if len(propArray) != 0 {
-			ruleProp = new(SarifRuleProperties)
+			ruleProp = new(format.SarifRuleProperties)
 			for j := 0; j < len(propArray); j++ {
 				if propArray[j][0] == "Accuracy" {
 					ruleProp.Accuracy = propArray[j][1]
@@ -736,55 +838,241 @@ func Parse(sys System, project *models.Project, projectVersion *models.ProjectVe
 		}
 		sarifRule.Properties = ruleProp
 
+		//relationships: will most likely require some expansion
+		//One relationship per CWE id
+		for j := 0; j < len(cweIds); j++ {
+			rls := *new(format.Relationships)
+			rls.Target.Id = cweIds[j]
+			rls.Target.ToolComponent.Name = "CWE"
+			rls.Target.ToolComponent.Guid = "25F72D7E-8A92-459D-AD67-64853F788765"
+			rls.Kinds = append(rls.Kinds, "relevant")
+			sarifRule.Relationships = append(sarifRule.Relationships, rls)
+		}
+
 		//Finalize: append the rule
 		tool.Driver.Rules = append(tool.Driver.Rules, sarifRule)
 	}
+	//supportedTaxonomies
+	sTax := *new(format.SupportedTaxonomies) //This object seems fixed, but it will have to be checked
+	sTax.Name = "CWE"
+	sTax.Index = 0
+	sTax.Guid = "25F72D7E-8A92-459D-AD67-64853F788765"
+	tool.Driver.SupportedTaxonomies = append(tool.Driver.SupportedTaxonomies, sTax)
+
 	//Finalize: tool
 	sarif.Runs[0].Tool = tool
+
+	//handle invocations object
+	invocation := *new(format.Invocations)
+	for i := 0; i < len(fvdl.EngineData.Properties); i++ { //i selects the properties type
+		if fvdl.EngineData.Properties[i].PropertiesType == "Fortify" { // This is the correct type, now iterate on props
+			for j := 0; j < len(fvdl.EngineData.Properties[i].Property); j++ {
+				if fvdl.EngineData.Properties[i].Property[j].Name == "com.fortify.SCAExecutablePath" {
+					splitPath := strings.Split(fvdl.EngineData.Properties[i].Property[j].Value, "/")
+					invocation.CommandLine = splitPath[len(splitPath)-1]
+					break
+				}
+			}
+			break
+		}
+	}
+	invocation.CommandLine = strings.Join(append([]string{invocation.CommandLine}, fvdl.EngineData.CLArguments...), " ")
+	invocation.StartTimeUtc = strings.Join([]string{fvdl.Created.Date, fvdl.Created.Time}, "T") + ".000Z"
+	for i := 0; i < len(fvdl.EngineData.Errors); i++ {
+		ten := *new(format.ToolExecutionNotifications)
+		ten.Message.Text = fvdl.EngineData.Errors[i].ErrorMessage
+		ten.Descriptor.Id = fvdl.EngineData.Errors[i].ErrorCode
+		invocation.ToolExecutionNotifications = append(invocation.ToolExecutionNotifications, ten)
+	}
+	invocation.ExecutionSuccessful = true //fvdl doesn't seem to plan for this setting
+	invocation.Machine = fvdl.EngineData.MachineInfo.Hostname
+	invocation.Account = fvdl.EngineData.MachineInfo.Username
+	invocation.Properties.Platform = fvdl.EngineData.MachineInfo.Platform
+	sarif.Runs[0].Invocations = append(sarif.Runs[0].Invocations, invocation)
+
+	//handle originalUriBaseIds
+	oubi := new(format.OriginalUriBaseIds)
+	oubi.SrcRoot.Uri = "file:///" + fvdl.Build.SourceBasePath + "/"
+	sarif.Runs[0].OriginalUriBaseIds = oubi
+
+	//handle artifacts
+	for i := 0; i < len(fvdl.Build.SourceFiles); i++ { //i iterates on source files
+		artifact := *new(format.Artifact)
+		artifact.Location.Uri = fvdl.Build.SourceFiles[i].Name
+		artifact.Location.UriBaseId = "%SRCROOT%"
+		artifact.Length = fvdl.Build.SourceFiles[i].FileSize
+		switch fvdl.Build.SourceFiles[i].FileType {
+		case "java":
+			artifact.MimeType = "text/x-java-source"
+		case "xml":
+			artifact.MimeType = "text/xml"
+		default:
+			artifact.MimeType = "text"
+		}
+		artifact.Encoding = fvdl.Build.SourceFiles[i].Encoding
+		sarif.Runs[0].Artifacts = append(sarif.Runs[0].Artifacts, artifact)
+	}
+
+	//handle automationDetails
+	sarif.Runs[0].AutomationDetails.Id = fvdl.Build.BuildID
+
+	//handle threadFlowLocations
+	threadFlowLocationsObject := []format.Locations{}
+	//prepare a check object
+	for i := 0; i < len(fvdl.UnifiedNodePool.Node); i++ {
+		unique := true
+		//Uniqueness Check
+		for check := 0; check < i; check++ {
+			if fvdl.UnifiedNodePool.Node[i].SourceLocation.Snippet == fvdl.UnifiedNodePool.Node[check].SourceLocation.Snippet &&
+				fvdl.UnifiedNodePool.Node[i].Action.ActionData == fvdl.UnifiedNodePool.Node[check].Action.ActionData {
+				unique = false
+			}
+		}
+		if !unique {
+			continue
+		}
+		locations := *new(format.Locations)
+		loc := new(format.Location)
+		//get artifact location
+		for j := 0; j < len(fvdl.Build.SourceFiles); j++ { // j iterates on source files
+			if fvdl.Build.SourceFiles[j].Name == fvdl.UnifiedNodePool.Node[i].SourceLocation.Path {
+				loc.PhysicalLocation.ArtifactLocation.Index = j
+				break
+			}
+		}
+		//get region & context region
+		loc.PhysicalLocation.Region.StartLine = fvdl.UnifiedNodePool.Node[i].SourceLocation.Line
+		//loc.PhysicalLocation.Region.Snippet.Text = "foobar" //TODO
+		targetSnippetId := fvdl.UnifiedNodePool.Node[i].SourceLocation.Snippet
+		for j := 0; j < len(fvdl.Snippets); j++ {
+			if fvdl.Snippets[j].SnippetId == targetSnippetId {
+				loc.PhysicalLocation.ContextRegion.StartLine = fvdl.Snippets[j].StartLine
+				loc.PhysicalLocation.ContextRegion.EndLine = fvdl.Snippets[j].EndLine
+				snippetSarif := new(format.SnippetSarif)
+				snippetSarif.Text = fvdl.Snippets[j].Text
+				loc.PhysicalLocation.ContextRegion.Snippet = snippetSarif
+				break
+			}
+		}
+		loc.Message = new(format.Message)
+		loc.Message.Text = fvdl.UnifiedNodePool.Node[i].Action.ActionData
+		// Handle snippet
+		snippetTarget := ""
+		switch fvdl.UnifiedNodePool.Node[i].Action.Type {
+		case "Assign":
+			snippetWords := strings.Split(fvdl.UnifiedNodePool.Node[i].Action.ActionData, " ")
+			if snippetWords[0] == "Assignment" {
+				snippetTarget = snippetWords[2]
+			} else {
+				snippetTarget = fvdl.UnifiedNodePool.Node[i].Action.ActionData
+			}
+		case "InCall":
+			snippetTarget = strings.Split(fvdl.UnifiedNodePool.Node[i].Action.ActionData, "(")[0]
+		case "OutCall":
+			snippetTarget = strings.Split(fvdl.UnifiedNodePool.Node[i].Action.ActionData, "(")[0]
+		case "InOutCall":
+			snippetTarget = strings.Split(fvdl.UnifiedNodePool.Node[i].Action.ActionData, "(")[0]
+		case "Return":
+			snippetTarget = fvdl.UnifiedNodePool.Node[i].Action.ActionData
+		case "Read":
+			snippetWords := strings.Split(fvdl.UnifiedNodePool.Node[i].Action.ActionData, " ")
+			if len(snippetWords) > 1 {
+				snippetTarget = " " + snippetWords[1]
+			} else {
+				snippetTarget = snippetWords[0]
+			}
+		default:
+			snippetTarget = fvdl.UnifiedNodePool.Node[i].Action.ActionData
+		}
+		if loc.PhysicalLocation.ContextRegion.Snippet != nil {
+			physLocationSnippetLines := strings.Split(loc.PhysicalLocation.ContextRegion.Snippet.Text, "\n")
+			snippetText := ""
+			for j := 0; j < len(physLocationSnippetLines); j++ {
+				if strings.Contains(physLocationSnippetLines[j], snippetTarget) {
+					snippetText = physLocationSnippetLines[j]
+					break
+				}
+			}
+			snippetSarif := new(format.SnippetSarif)
+			if snippetText != "" {
+				snippetSarif.Text = snippetText
+			} else {
+				snippetSarif.Text = loc.PhysicalLocation.ContextRegion.Snippet.Text
+			}
+			loc.PhysicalLocation.Region.Snippet = snippetSarif
+		}
+		locations.Location = loc
+		locations.Kinds = append(locations.Kinds, "unknown")
+		threadFlowLocationsObject = append(threadFlowLocationsObject, locations)
+	}
+
+	sarif.Runs[0].ThreadFlowLocations = threadFlowLocationsObject
+
+	//handle taxonomies
+	//Only one exists apparently: CWE. It is fixed
+	taxonomy := *new(format.Taxonomies)
+	taxonomy.Guid = "25F72D7E-8A92-459D-AD67-64853F788765"
+	taxonomy.Name = "CWE"
+	taxonomy.Organization = "MITRE"
+	taxonomy.ShortDescription.Text = "The MITRE Common Weakness Enumeration"
+	for key := range cweIdsForTaxonomies {
+		taxa := *new(format.Taxa)
+		taxa.Id = key
+		taxonomy.Taxa = append(taxonomy.Taxa, taxa)
+	}
+	sarif.Runs[0].Taxonomies = append(sarif.Runs[0].Taxonomies, taxonomy)
 
 	return sarif, nil
 }
 
-func (RuleProp *SarifProperties) IntegrateAuditData(issueInstanceID string, sys System, project *models.Project, projectVersion *models.ProjectVersion) error {
+func integrateAuditData(ruleProp *format.SarifProperties, issueInstanceID string, sys System, project *models.Project, projectVersion *models.ProjectVersion, filterSet *models.FilterSet) error {
+	if sys == nil {
+		err := errors.New("no system instance, lookup impossible for " + issueInstanceID)
+		return err
+	}
+	if project == nil || projectVersion == nil {
+		err := errors.New("project or projectVersion is undefined: lookup aborted for " + issueInstanceID)
+		return err
+	}
 	data, err := sys.GetIssueDetails(projectVersion.ID, issueInstanceID)
-	log.Entry().Debug("Looking up audit state of " + issueInstanceID)
 	if err != nil {
 		return err
 	}
+	log.Entry().Debug("Looking up audit state of " + issueInstanceID)
 	if len(data) != 1 { //issueInstanceID is supposedly unique so len(data) = 1
 		log.Entry().Error("not exactly 1 issue found, found " + fmt.Sprint(len(data)))
 		return errors.New("not exactly 1 issue found, found " + fmt.Sprint(len(data)))
 	}
-	RuleProp.Audited = data[0].Audited
-	RuleProp.ToolSeverity = *data[0].Friority
-	switch RuleProp.ToolSeverity {
+	ruleProp.Audited = data[0].Audited
+	ruleProp.ToolSeverity = *data[0].Friority
+	switch ruleProp.ToolSeverity {
 	case "Critical":
-		RuleProp.ToolSeverityIndex = 5
+		ruleProp.ToolSeverityIndex = 5
 	case "Urgent":
-		RuleProp.ToolSeverityIndex = 4
+		ruleProp.ToolSeverityIndex = 4
 	case "High":
-		RuleProp.ToolSeverityIndex = 3
+		ruleProp.ToolSeverityIndex = 3
 	case "Medium":
-		RuleProp.ToolSeverityIndex = 2
+		ruleProp.ToolSeverityIndex = 2
 	case "Low":
-		RuleProp.ToolSeverityIndex = 1
+		ruleProp.ToolSeverityIndex = 1
 	}
-	if RuleProp.Audited {
-		RuleProp.ToolState = *data[0].PrimaryTag
-		switch RuleProp.ToolState { //This is as easy as it can get, seeing that the index is not in the response.
+	if ruleProp.Audited {
+		ruleProp.ToolState = *data[0].PrimaryTag
+		switch ruleProp.ToolState { //This is as easy as it can get, seeing that the index is not in the response.
 		case "Exploitable":
-			RuleProp.ToolStateIndex = 5
+			ruleProp.ToolStateIndex = 5
 		case "Suspicious":
-			RuleProp.ToolStateIndex = 4
+			ruleProp.ToolStateIndex = 4
 		case "Bad Practice":
-			RuleProp.ToolStateIndex = 3
+			ruleProp.ToolStateIndex = 3
 		case "Reliability Issue":
-			RuleProp.ToolStateIndex = 2
+			ruleProp.ToolStateIndex = 2
 		case "Not an Issue":
-			RuleProp.ToolStateIndex = 1
+			ruleProp.ToolStateIndex = 1
 		}
 	} else {
-		RuleProp.ToolState = "Unreviewed"
+		ruleProp.ToolState = "Unreviewed"
 	}
 	if *data[0].HasComments { //fetch latest message if comments exist
 		//Fetch the ID
@@ -793,7 +1081,18 @@ func (RuleProp *SarifProperties) IntegrateAuditData(issueInstanceID string, sys 
 		if err != nil {
 			return err
 		}
-		RuleProp.ToolAuditMessage = *commentData[0].Comment
+		ruleProp.ToolAuditMessage = *commentData[0].Comment
+	}
+	if filterSet != nil {
+		for i := 0; i < len(filterSet.Folders); i++ {
+			if filterSet.Folders[i].GUID == *data[0].FolderGUID {
+				ruleProp.FortifyCategory = filterSet.Folders[i].Name
+				break
+			}
+		}
+	} else {
+		err := errors.New("no filter set defined, category will be missing from " + issueInstanceID)
+		return err
 	}
 	return nil
 }

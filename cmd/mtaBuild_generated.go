@@ -98,6 +98,7 @@ func (p *mtaBuildReports) persist(stepConfig mtaBuildOptions, gcpJsonKeyFilePath
 	gcsClient, err := gcs.NewClient(gcs.WithEnvVars(envVars))
 	if err != nil {
 		log.Entry().Errorf("creation of GCS client failed: %v", err)
+		return
 	}
 	defer gcsClient.Close()
 	structVal := reflect.ValueOf(&stepConfig).Elem()
@@ -382,6 +383,11 @@ func mtaBuildMetadata() config.StepData {
 						ResourceRef: []config.ResourceReference{
 							{
 								Name:  "commonPipelineEnvironment",
+								Param: "custom/mavenRepositoryPassword",
+							},
+
+							{
+								Name:  "commonPipelineEnvironment",
 								Param: "custom/repositoryPassword",
 							},
 
@@ -407,6 +413,11 @@ func mtaBuildMetadata() config.StepData {
 						ResourceRef: []config.ResourceReference{
 							{
 								Name:  "commonPipelineEnvironment",
+								Param: "custom/mavenRepositoryUsername",
+							},
+
+							{
+								Name:  "commonPipelineEnvironment",
 								Param: "custom/repositoryUsername",
 							},
 						},
@@ -419,6 +430,11 @@ func mtaBuildMetadata() config.StepData {
 					{
 						Name: "mtaDeploymentRepositoryUrl",
 						ResourceRef: []config.ResourceReference{
+							{
+								Name:  "commonPipelineEnvironment",
+								Param: "custom/mavenRepositoryURL",
+							},
+
 							{
 								Name:  "commonPipelineEnvironment",
 								Param: "custom/repositoryUrl",

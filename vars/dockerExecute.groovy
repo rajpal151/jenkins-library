@@ -217,6 +217,8 @@ void call(Map parameters = [:], body) {
                 }
                 dockerExecuteOnKubernetes(dockerExecuteOnKubernetesParams) {
                     echo "[INFO][${STEP_NAME}] Executing inside a Kubernetes Pod"
+                    echo "[MH] Environment"
+                    sh "env"
                     body()
                 }
             }

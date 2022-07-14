@@ -207,6 +207,7 @@ func runHelmDeploy(config kubernetesDeployOptions, utils kubernetes.DeployUtils,
 	utils.Stdout(stdout)
 	log.Entry().Info("Calling helm upgrade ...")
 	log.Entry().Debugf("Helm parameters %v", upgradeParams)
+	log.Entry().Debugf("Printing dockerconfig %v", config.DockerConfigJSON)
 	if err := utils.RunExecutable("helm", upgradeParams...); err != nil {
 		log.Entry().WithError(err).Fatal("Helm upgrade call failed")
 	}

@@ -21,6 +21,7 @@ type GithubRepoClient interface {
 	CreateRelease(ctx context.Context, owner string, repo string, release *github.RepositoryRelease) (*github.RepositoryRelease, *github.Response, error)
 	DeleteReleaseAsset(ctx context.Context, owner string, repo string, id int64) (*github.Response, error)
 	GetLatestRelease(ctx context.Context, owner string, repo string) (*github.RepositoryRelease, *github.Response, error)
+	GetReleaseByTag(ctx context.Context, owner string, repo string, tag string) (*github.RepositoryRelease, *github.Response, error)
 	ListReleaseAssets(ctx context.Context, owner string, repo string, id int64, opt *github.ListOptions) ([]*github.ReleaseAsset, *github.Response, error)
 	UploadReleaseAsset(ctx context.Context, owner string, repo string, id int64, opt *github.UploadOptions, file *os.File) (*github.ReleaseAsset, *github.Response, error)
 }
@@ -63,6 +64,13 @@ func runGithubPublishRelease(ctx context.Context, config *githubPublishReleaseOp
 		return uploadReleaseAsset(ctx, lastRelease.GetID(), config, ghRepoClient)
 	} else if len(config.AssetPathList) > 0 && config.Version == "latest" {
 		return uploadReleaseAssetList(ctx, lastRelease.GetID(), config, ghRepoClient)
+	}
+
+	taggedRelease, resp, err := ghRepoClient.GetReleaseByTag(ctx, config.Owner, config.Repository, config.Version)
+	if len(config.AssetPath) > 0 && config.Version != "latest" {
+		return uploadReleaseAsset(ctx, taggedRelease.GetID(), config, ghRepoClient)
+	} else if len(config.AssetPathList) > 0 && config.Version != "latest" {
+		return uploadReleaseAssetList(ctx, taggedRelease.GetID(), config, ghRepoClient)
 	}
 
 	releaseBody := ""

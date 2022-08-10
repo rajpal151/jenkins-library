@@ -3,6 +3,7 @@ package orchestrator
 import (
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"time"
@@ -60,9 +61,69 @@ func (a *AzureDevOpsConfigProvider) fetchAPIInformation() {
 	}
 }
 
+//func (a *AzureDevOpsConfigProvider) GetChangeSet() []ChangeSet {
+//	fs := memfs.New()
+//	storer := memory.NewStorage()
+//	repo, err := goGit.Open(storer, fs)
+//	if err != nil {
+//		log.Entry().Warn("Unable to initialize go-git. Skipping change set (DORA) creation…", err)
+//		return []ChangeSet{}
+//	}
+//
+//	tags, err := repo.Tags()
+//
+//	var lastTag *object.Tag
+//	if err := tags.ForEach(func(ref *plumbing.Reference) error {
+//		obj, err := repo.TagObject(ref.Hash())
+//		switch err {
+//		case nil:
+//			lastTag = obj
+//			return nil
+//		default:
+//			return err
+//		}
+//	}); err != nil {
+//		// TODO
+//	}
+//
+//	currentCommit := getEnv("BUILD_SOURCEVERSION", "n/a")
+//
+//	return []ChangeSet{}
+//}
+
 func (a *AzureDevOpsConfigProvider) GetChangeSet() []ChangeSet {
-	log.Entry().Warn("GetChangeSet for AzureDevOps not yet implemented")
-	return []ChangeSet{}
+	var changeSet []ChangeSet
+
+	exec.Command("git", "fetch", "--all").Run()
+
+	getLastTagCmd := exec.Command("git", "tag", "|", "sort", "-V", "|", "tail", "-1")
+	output, err := getLastTagCmd.Output()
+	if err != nil {
+		log.Entry().Warn("Unable to get the last commit of the repository. Returning empty change set (DORA)…", err)
+		return changeSet
+	}
+	compareString := string(output) + "..." + getEnv("BUILD_SOURCEVERSION", "n/a")
+
+	commitsSinceLastTagCmd := exec.Command("git", "log", "--oneline", compareString, "|", "cut", "-d", "\" \"", "-f1")
+	output, err = commitsSinceLastTagCmd.Output()
+	if err != nil {
+		log.Entry().Warn("Unable to get the last commit of the repository. Returning empty change set (DORA)…", err)
+		return changeSet
+	}
+
+	commits := strings.Split(string(output), "\n")
+	for _, line := range commits {
+		getCommitTimestampCmd := exec.Command("git", "show", "-s", "--format=%ci", line)
+		output, err = getCommitTimestampCmd.Output()
+		if err != nil {
+			log.Entry().Warn("Failed to get timestamp for commit: "+line, err)
+		}
+
+		changeSet = append(changeSet, ChangeSet{CommitId: line, timestamp: string(output)})
+
+	}
+
+	return changeSet
 }
 
 // getSystemCollectionURI returns the URI of the TFS collection or Azure DevOps organization e.g. https://dev.azure.com/fabrikamfiber/

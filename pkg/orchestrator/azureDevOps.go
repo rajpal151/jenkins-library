@@ -105,7 +105,7 @@ func (a *AzureDevOpsConfigProvider) GetChangeSet() []ChangeSet {
 	compareString := string(lastTagCmdOutput) + "..." + getEnv("BUILD_SOURCEVERSION", "n/a")
 
 	commitsSinceLastTagCmd := exec.Command("git", "log", "--oneline", compareString, "|", "cut", "-d", "\" \"", "-f1")
-	output, err = commitsSinceLastTagCmd.Output()
+	output, err := commitsSinceLastTagCmd.Output()
 	if err != nil {
 		log.Entry().Warnf("Unable to read all commits since release %s. Returning empty change set (DORA)… %s", lastTagCmdOutput, err)
 		return changeSet

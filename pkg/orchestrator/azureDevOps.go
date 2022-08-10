@@ -97,17 +97,17 @@ func (a *AzureDevOpsConfigProvider) GetChangeSet() []ChangeSet {
 	exec.Command("git", "fetch", "--all").Run()
 
 	getLastTagCmd := exec.Command("git", "tag", "|", "sort", "-V", "|", "tail", "-1")
-	output, err := getLastTagCmd.Output()
+	lastTagCmdOutput, err := getLastTagCmd.Output()
 	if err != nil {
-		log.Entry().Warn("Unable to get the last commit of the repository. Returning empty change set (DORA)…", err)
+		log.Entry().Warn("Unable to get the last tag of the repository. Returning empty change set (DORA)…", err)
 		return changeSet
 	}
-	compareString := string(output) + "..." + getEnv("BUILD_SOURCEVERSION", "n/a")
+	compareString := string(lastTagCmdOutput) + "..." + getEnv("BUILD_SOURCEVERSION", "n/a")
 
 	commitsSinceLastTagCmd := exec.Command("git", "log", "--oneline", compareString, "|", "cut", "-d", "\" \"", "-f1")
 	output, err = commitsSinceLastTagCmd.Output()
 	if err != nil {
-		log.Entry().Warn("Unable to get the last commit of the repository. Returning empty change set (DORA)…", err)
+		log.Entry().Warnf("Unable to read all commits since release %s. Returning empty change set (DORA)… %s", lastTagCmdOutput, err)
 		return changeSet
 	}
 

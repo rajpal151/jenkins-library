@@ -150,6 +150,7 @@ func getConfig() (config.StepConfig, error) {
 			return stepConfig, errors.Wrap(err, "getting stage config failed")
 		}
 	} else {
+		return stepConfig, fmt.Errorf("hardcoded error")
 		log.Entry().Infof("Printing stepName %s", configOptions.stepName)
 		if GeneralConfig.MetaDataResolver == nil {
 			GeneralConfig.MetaDataResolver = GetAllStepMetadata

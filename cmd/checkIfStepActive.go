@@ -155,7 +155,7 @@ func initializeConfig(pConfig *config.Config) (*config.Config, error) {
 	var customConfig io.ReadCloser
 	var err error
 	//accept that config file cannot be loaded as its not mandatory here
-	if exists, err := piperutils.FileExists(projectConfigFile); exists {
+	if exists, err := piperutils.FileExists(projectConfigFile); exists || true{
 		log.Entry().Infof("Project config: '%s'", projectConfigFile)
 		customConfig, err = checkStepActiveOptions.openFile(projectConfigFile, GeneralConfig.GitHubAccessTokens)
 		if err != nil {
